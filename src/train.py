@@ -4,7 +4,7 @@ from joblib import dump
 import click
 #import mlflow
 import mlflow.sklearn
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, log_loss, v_measure_score, mean_squared_error
 
 from pipeline import create_pipeline_k_means, create_pipeline_log_reg
 from data import get_dataset
@@ -88,8 +88,15 @@ def train(
     else:
         pipeline = create_pipeline_log_reg(use_scaler,logreg_c,max_iter)
     pipeline.fit(features_train, target_train)
-    accuracy = accuracy_score(target_val, pipeline.predict(features_val))
+    target_pred = pipeline.predict(features_val)
+    if classifier=="K-Means":
+        target_pred+=1 #because k-means give labels starting from 0, not 1 like in dataset
+    accuracy = accuracy_score(target_val, target_pred)
     click.echo(f"Accuracy: {accuracy}.")
+    v_score = v_measure_score(target_val,target_pred)
+    click.echo(f"V-Score: {v_score}.")
+    mse = mean_squared_error(target_val,target_pred)
+    click.echo(f"Mean Squared Error: {mse}.")
     dump(pipeline, save_model_path)
     click.echo(f"Model is saved to {save_model_path}.")
 
