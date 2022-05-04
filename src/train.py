@@ -2,11 +2,11 @@ from pathlib import Path
 from joblib import dump
 
 import click
-import mlflow
+#import mlflow
 import mlflow.sklearn
 from sklearn.metrics import accuracy_score
 
-from pipeline import create_pipeline
+from pipeline import create_pipeline_k_means, create_pipeline_log_reg
 from data import get_dataset
 
 
@@ -55,6 +55,18 @@ from data import get_dataset
     type=float,
     show_default=True,
 )
+@click.option(
+    "--n-clusters",
+    default=7,
+    type=int,
+    show_default=True,
+)
+@click.option(
+    "--classifier",
+    default="K-Means",
+    type=str,
+    show_default=True,
+)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -63,13 +75,18 @@ def train(
     use_scaler: bool,
     max_iter: int,
     logreg_c: float,
+    n_clusters: int,
+    classifier:str
 ) -> None:
     features_train, features_val, target_train, target_val = get_dataset(
         dataset_path,
         random_state,
         test_split_ratio,
     )
-    pipeline = create_pipeline(use_scaler,logreg_c)
+    if classifier=="K-Means":
+        pipeline = create_pipeline_k_means(use_scaler,n_clusters)
+    else:
+        pipeline = create_pipeline_log_reg(use_scaler,logreg_c,max_iter)
     pipeline.fit(features_train, target_train)
     accuracy = accuracy_score(target_val, pipeline.predict(features_val))
     click.echo(f"Accuracy: {accuracy}.")
