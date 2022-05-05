@@ -3,7 +3,7 @@ from joblib import dump
 
 import click
 #import mlflow
-import mlflow.sklearn
+#import mlflow.sklearn
 import numpy as np
 from sklearn.metrics import accuracy_score, log_loss, v_measure_score, mean_squared_error
 from sklearn.model_selection import KFold
