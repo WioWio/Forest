@@ -7,13 +7,10 @@ from sklearn.model_selection import train_test_split
 
 
 def get_dataset(
-    csv_path: Path, random_state: int, test_split_ratio: float
-) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
-    dataset = pd.read_csv(csv_path, index_col='Id')
+    csv_path: Path
+) -> Tuple[pd.DataFrame, pd.Series]:
+    dataset = pd.read_csv(csv_path)
     click.echo(f"Dataset shape: {dataset.shape}.")
-    features = dataset.drop("Cover_Type", axis=1)
+    features = dataset.drop(["Id","Cover_Type"], axis=1)
     target = dataset["Cover_Type"]
-    features_train, features_val, target_train, target_val = train_test_split(
-        features, target, test_size=test_split_ratio, random_state=random_state
-    )
-    return features_train, features_val, target_train, target_val
+    return features, target
