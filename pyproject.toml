@@ -14,6 +14,7 @@ joblib = "^1.1.0"
 pipeline = "^0.1"
 pywin32 = "228"
 mlflow = "1.22.0"
+Boruta = "^0.3"
 
 [tool.poetry.scripts]
 train = "src.forest_ml.train:train"

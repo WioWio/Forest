@@ -3,9 +3,13 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
+from forest_ml.feature_engin import select_features
 
-def create_pipeline(classifier: str, use_scaler: bool, logreg_C: float = None, max_iter: int = None, n_clusters: int= None) -> Pipeline:
+
+def create_pipeline(classifier: str, selector: str, use_scaler: bool, logreg_C: float = None, max_iter: int = None, n_clusters: int= None) -> Pipeline:
     steps = []
+    if selector != 'None':
+        steps.append(("selector", select_features(selector)))
     if use_scaler:
         steps.append(("scaler", StandardScaler()))
     if classifier == 'K-Means':

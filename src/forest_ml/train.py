@@ -25,9 +25,7 @@ def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
     for train_i, test_i in splits.split(X):
         y_pred = model.fit(X[train_i], y[train_i]).predict(X[test_i])
         if classifier == "K-Means":
-            y_pred += (
-                1  # because k-means give labels starting from 0, not 1 like in dataset
-            )
+            y_pred += 1  # because k-means give labels starting from 0, not 1 like in dataset
         accuracy.append(accuracy_score(y[test_i], y_pred))
         mse.append(mean_squared_error(y[test_i], y_pred))
         v_score.append(v_measure_score(y[test_i], y_pred))
@@ -91,6 +89,12 @@ def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
     type=str,
     show_default=True,
 )
+@click.option(
+    "--selector",
+    default="None",
+    type=str,
+    show_default=True,
+)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -101,11 +105,13 @@ def train(
     logreg_c: float,
     n_clusters: int,
     classifier: str,
+    selector: str
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
-        pipeline = create_pipeline(classifier,use_scaler, logreg_c, max_iter, n_clusters)   
+        pipeline = create_pipeline(classifier, selector, use_scaler, logreg_c, max_iter, n_clusters)   
         metrics = get_metrics(classifier, pipeline, features, target, n_splits=5)
+        mlflow.log_param("selector", selector)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("max_iter", max_iter)
