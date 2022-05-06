@@ -14,7 +14,7 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold
 
-from .pipeline import create_pipeline_k_means, create_pipeline_log_reg
+from .pipeline import create_pipeline
 from .data import get_dataset
 
 
@@ -104,11 +104,8 @@ def train(
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
-        if classifier == "K-Means":
-            pipeline = create_pipeline_k_means(use_scaler, n_clusters)
-        else:
-            pipeline = create_pipeline_log_reg(use_scaler, logreg_c, max_iter)   
-        metrics = get_metrics(classifier, pipeline, features, target, 5)
+        pipeline = create_pipeline(classifier,use_scaler, logreg_c, max_iter, n_clusters)   
+        metrics = get_metrics(classifier, pipeline, features, target, n_splits=5)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("max_iter", max_iter)
