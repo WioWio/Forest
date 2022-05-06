@@ -14,8 +14,8 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold
 
-from pipeline import create_pipeline_k_means, create_pipeline_log_reg
-from data import get_dataset
+from .pipeline import create_pipeline_k_means, create_pipeline_log_reg
+from .data import get_dataset
 
 
 def get_metrics(classifier: str, model, X, y, n_splits: int, random_state: int) -> list:
@@ -44,14 +44,14 @@ def get_metrics(classifier: str, model, X, y, n_splits: int, random_state: int) 
 @click.option(
     "-d",
     "--dataset-path",
-    default="../data/forest_data.csv",
+    default="data/forest_data.csv",
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     show_default=True,
 )
 @click.option(
     "-s",
     "--save-model-path",
-    default="../data/model.joblib",
+    default="data/model.joblib",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
@@ -112,6 +112,3 @@ def train(
         click.echo(f"{metric[0]}: {metric[1]}")
     dump(pipeline, save_model_path)
     click.echo(f"Model is saved to {save_model_path}.")
-
-
-train()
