@@ -12,6 +12,8 @@ sklearn = "^0.0"
 scipy = "1.8.0"
 joblib = "^1.1.0"
 pipeline = "^0.1"
+pywin32 = "228"
+mlflow = "1.22.0"
 
 [tool.poetry.scripts]
 train = "src.forest_ml.train:train"

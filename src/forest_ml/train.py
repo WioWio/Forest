@@ -3,9 +3,9 @@ from joblib import dump
 
 import click
 
-# import mlflow
-# import mlflow.sklearn
+import mlflow
 import numpy as np
+import sklearn
 from sklearn.metrics import (
     accuracy_score,
     log_loss,
@@ -18,10 +18,10 @@ from .pipeline import create_pipeline_k_means, create_pipeline_log_reg
 from .data import get_dataset
 
 
-def get_metrics(classifier: str, model, X, y, n_splits: int, random_state: int) -> list:
+def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
     X = X.to_numpy()
     accuracy, mse, v_score = [], [], []
-    splits = KFold(n_splits=n_splits, random_state=random_state, shuffle=True)
+    splits = KFold(n_splits=n_splits)
     for train_i, test_i in splits.split(X):
         y_pred = model.fit(X[train_i], y[train_i]).predict(X[test_i])
         if classifier == "K-Means":
@@ -69,7 +69,7 @@ def get_metrics(classifier: str, model, X, y, n_splits: int, random_state: int) 
 )
 @click.option(
     "--max-iter",
-    default=100,
+    default=1000,
     type=int,
     show_default=True,
 )
@@ -103,12 +103,21 @@ def train(
     classifier: str,
 ) -> None:
     features, target = get_dataset(dataset_path)
-    if classifier == "K-Means":
-        pipeline = create_pipeline_k_means(use_scaler, n_clusters)
-    else:
-        pipeline = create_pipeline_log_reg(use_scaler, logreg_c, max_iter)
-    metrics = get_metrics(classifier, pipeline, features, target, 5, random_state)
-    for metric in metrics:
-        click.echo(f"{metric[0]}: {metric[1]}")
-    dump(pipeline, save_model_path)
-    click.echo(f"Model is saved to {save_model_path}.")
+    with mlflow.start_run():
+        if classifier == "K-Means":
+            pipeline = create_pipeline_k_means(use_scaler, n_clusters)
+        else:
+            pipeline = create_pipeline_log_reg(use_scaler, logreg_c, max_iter)   
+        metrics = get_metrics(classifier, pipeline, features, target, 5)
+        mlflow.log_param("model", classifier)
+        mlflow.log_param("use_scaler", use_scaler)
+        mlflow.log_param("max_iter", max_iter)
+        if classifier == "LogReg":
+            mlflow.log_param("logreg_c", logreg_c)
+        if classifier == "K-Means":
+            mlflow.log_param("n_clusters", n_clusters)
+        for metric in metrics:
+            mlflow.log_metric(metric[0], metric[1])
+            click.echo(f"{metric[0]}: {metric[1]}")
+        dump(pipeline, save_model_path)
+        click.echo(f"Model is saved to {save_model_path}.")
