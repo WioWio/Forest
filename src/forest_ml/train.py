@@ -25,7 +25,9 @@ def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
     for train_i, test_i in splits.split(X):
         y_pred = model.fit(X[train_i], y[train_i]).predict(X[test_i])
         if classifier == "K-Means":
-            y_pred += 1  # because k-means give labels starting from 0, not 1 like in dataset
+            y_pred += (
+                1  # because k-means give labels starting from 0, not 1 like in dataset
+            )
         accuracy.append(accuracy_score(y[test_i], y_pred))
         mse.append(mean_squared_error(y[test_i], y_pred))
         v_score.append(v_measure_score(y[test_i], y_pred))
@@ -78,14 +80,14 @@ def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
     show_default=True,
 )
 @click.option(
-    "--n-clusters",
-    default=7,
+    "--n-neighbors",
+    default=5,
     type=int,
     show_default=True,
 )
 @click.option(
     "--classifier",
-    default="K-Means",
+    default="K-Neighbors",
     type=str,
     show_default=True,
 )
@@ -103,13 +105,15 @@ def train(
     use_scaler: bool,
     max_iter: int,
     logreg_c: float,
-    n_clusters: int,
+    n_neighbors: int,
     classifier: str,
-    selector: str
+    selector: str,
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
-        pipeline = create_pipeline(classifier, selector, use_scaler, logreg_c, max_iter, n_clusters)   
+        pipeline = create_pipeline(
+            classifier, selector, use_scaler, logreg_c, max_iter, n_neighbors
+        )
         metrics = get_metrics(classifier, pipeline, features, target, n_splits=5)
         mlflow.log_param("selector", selector)
         mlflow.log_param("model", classifier)
@@ -117,8 +121,8 @@ def train(
         mlflow.log_param("max_iter", max_iter)
         if classifier == "LogReg":
             mlflow.log_param("logreg_c", logreg_c)
-        if classifier == "K-Means":
-            mlflow.log_param("n_clusters", n_clusters)
+        if classifier == "K-Neighbors":
+            mlflow.log_param("n_neighbors", n_neighbors)
         for metric in metrics:
             mlflow.log_metric(metric[0], metric[1])
             click.echo(f"{metric[0]}: {metric[1]}")
