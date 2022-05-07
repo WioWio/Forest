@@ -8,9 +8,9 @@ from forest_ml.feature_engin import select_features
 
 def create_pipeline(
     classifier: str,
-    selector: str,
-    pca_components: int,
-    use_scaler: bool,
+    selector: str = None,
+    pca_components: int = 2,
+    use_scaler: bool = True,
     logreg_C: float = None,
     max_iter: int = None,
     n_neighbors: int = None,

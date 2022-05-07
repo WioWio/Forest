@@ -15,6 +15,8 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold
 
+from forest_ml.params_searcher import search_params
+
 from .pipeline import create_pipeline
 from .data import get_dataset
 
@@ -103,6 +105,12 @@ def get_metrics(model, X, y, n_splits: int) -> list:
     type=int,
     show_default=True,
 )
+@click.option(
+    "--use-search-cv",
+    default=True,
+    type=bool,
+    show_default=True,
+)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -114,27 +122,35 @@ def train(
     n_neighbors: int,
     classifier: str,
     selector: str,
-    pca_components: int
+    pca_components: int,
+    use_search_cv: bool
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
-        pipeline = create_pipeline(
-            classifier, selector, pca_components, use_scaler, logreg_c, max_iter, n_neighbors
-        )
-        metrics = get_metrics(pipeline, features, target, n_splits=5)
-        if selector:
-            mlflow.log_param("selector", selector)
-            if selector == "PCA":
-                mlflow.log_param("n_components", pca_components)
-        mlflow.log_param("model", classifier)
-        mlflow.log_param("use_scaler", use_scaler)
-        mlflow.log_param("max_iter", max_iter)
-        if classifier == "LogReg":
-            mlflow.log_param("logreg_c", logreg_c)
-        if classifier == "K-Neighbors":
-            mlflow.log_param("n_neighbors", n_neighbors)
-        for metric in metrics:
-            mlflow.log_metric(metric[0], metric[1])
-            click.echo(f"{metric[0]}: {metric[1]}")
-        dump(pipeline, save_model_path)
-        click.echo(f"Model is saved to {save_model_path}.")
+        mlflow.log_param('model', classifier)
+        if use_search_cv:
+            params, best_score = search_params(features, target, classifier)
+            for param, value in params.items():
+                mlflow.log_param(param, value)
+            mlflow.log_metric('accuracy', best_score)    
+        else:
+            pipeline = create_pipeline(
+                classifier, selector, pca_components, 
+                use_scaler, logreg_c, max_iter, n_neighbors
+            )
+            metrics = get_metrics(pipeline, features, target, n_splits=5)
+            if selector:
+                mlflow.log_param("selector", selector)
+                if selector == "PCA":
+                    mlflow.log_param("n_components", pca_components)
+            mlflow.log_param("use_scaler", use_scaler)
+            mlflow.log_param("max_iter", max_iter)
+            if classifier == "LogReg":
+                mlflow.log_param("logreg_c", logreg_c)
+            if classifier == "K-Neighbors":
+                mlflow.log_param("n_neighbors", n_neighbors)
+            for metric in metrics:
+                mlflow.log_metric(metric[0], metric[1])
+                click.echo(f"{metric[0]}: {metric[1]}")
+            dump(pipeline, save_model_path)
+            click.echo(f"Model is saved to {save_model_path}.")
