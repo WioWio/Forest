@@ -15,7 +15,7 @@ def create_pipeline(
     n_neighbors: int = None,
 ) -> Pipeline:
     steps = []
-    if selector != "None":
+    if selector is not None:
         steps.append(("selector", select_features(selector)))
     if use_scaler:
         steps.append(("scaler", StandardScaler()))

@@ -18,23 +18,24 @@ from .pipeline import create_pipeline
 from .data import get_dataset
 
 
-def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
+def get_metrics(model, X, y, n_splits: int) -> list:
     X = X.to_numpy()
-    accuracy, mse, v_score = [], [], []
+    accuracy, mse, loss, v_score = [], [], [], []
     splits = KFold(n_splits=n_splits)
     for train_i, test_i in splits.split(X):
-        y_pred = model.fit(X[train_i], y[train_i]).predict(X[test_i])
-        if classifier == "K-Means":
-            y_pred += (
-                1  # because k-means give labels starting from 0, not 1 like in dataset
-            )
-        accuracy.append(accuracy_score(y[test_i], y_pred))
-        mse.append(mean_squared_error(y[test_i], y_pred))
+        fitted_model = model.fit(X[train_i], y[train_i])
+        y_pred = fitted_model.predict(X[test_i])
+        y_prob = fitted_model.predict_proba(X[test_i])
+        y_true = y[test_i]
+        accuracy.append(accuracy_score(y_true, y_pred))
+        mse.append(mean_squared_error(y_true, y_pred))
+        loss.append(log_loss(y_true, y_prob))
         v_score.append(v_measure_score(y[test_i], y_pred))
-    accuracy, mse, v_score = np.mean(accuracy), np.mean(mse), np.mean(v_score)
+    accuracy, mse, loss, v_score = np.mean(accuracy), np.mean(mse), np.mean(loss), np.mean(v_score)
     metrics = [
         ("Accuracy", accuracy),
         ("Mean Squared Error", mse),
+        ("Log Loss", loss),
         ("V-Score", v_score),
     ]
     return metrics
@@ -93,9 +94,7 @@ def get_metrics(classifier: str, model, X, y, n_splits: int) -> list:
 )
 @click.option(
     "--selector",
-    default="None",
     type=str,
-    show_default=True,
 )
 def train(
     dataset_path: Path,
@@ -114,8 +113,9 @@ def train(
         pipeline = create_pipeline(
             classifier, selector, use_scaler, logreg_c, max_iter, n_neighbors
         )
-        metrics = get_metrics(classifier, pipeline, features, target, n_splits=5)
-        mlflow.log_param("selector", selector)
+        metrics = get_metrics(pipeline, features, target, n_splits=5)
+        if selector:
+            mlflow.log_param("selector", selector)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("max_iter", max_iter)
