@@ -9,6 +9,7 @@ from forest_ml.feature_engin import select_features
 def create_pipeline(
     classifier: str,
     selector: str,
+    pca_components: int,
     use_scaler: bool,
     logreg_C: float = None,
     max_iter: int = None,
@@ -16,7 +17,7 @@ def create_pipeline(
 ) -> Pipeline:
     steps = []
     if selector is not None:
-        steps.append(("selector", select_features(selector)))
+        steps.append(("selector", select_features(selector,pca_components)))
     if use_scaler:
         steps.append(("scaler", StandardScaler()))
     if classifier == "K-Neighbors":

@@ -1,3 +1,4 @@
+from email.policy import default
 from pathlib import Path
 from joblib import dump
 
@@ -96,6 +97,12 @@ def get_metrics(model, X, y, n_splits: int) -> list:
     "--selector",
     type=str,
 )
+@click.option(
+    "--pca-components",
+    default=2,
+    type=int,
+    show_default=True,
+)
 def train(
     dataset_path: Path,
     save_model_path: Path,
@@ -107,15 +114,18 @@ def train(
     n_neighbors: int,
     classifier: str,
     selector: str,
+    pca_components: int
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
         pipeline = create_pipeline(
-            classifier, selector, use_scaler, logreg_c, max_iter, n_neighbors
+            classifier, selector, pca_components, use_scaler, logreg_c, max_iter, n_neighbors
         )
         metrics = get_metrics(pipeline, features, target, n_splits=5)
         if selector:
             mlflow.log_param("selector", selector)
+            if selector == "PCA":
+                mlflow.log_param("n_components", pca_components)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("max_iter", max_iter)

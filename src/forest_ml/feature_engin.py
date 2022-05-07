@@ -6,7 +6,7 @@ from boruta import BorutaPy
 from sklearn.linear_model import Lasso
 
 
-def select_features(selector: str):
+def select_features(selector: str, pca_components: int):
     if selector == "Boruta":
         return BorutaPy(
             RandomForestClassifier(max_depth=10),
@@ -16,7 +16,7 @@ def select_features(selector: str):
             random_state=42,
         )
     if selector == "PCA":
-        return PCA(n_components=2)
+        return PCA(n_components=pca_components)
     if selector == "Trees":
         return SelectFromModel(ExtraTreesClassifier(n_estimators=50))
     if selector == "Lasso":
