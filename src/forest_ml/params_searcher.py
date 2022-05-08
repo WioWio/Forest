@@ -1,12 +1,10 @@
 from sklearn.model_selection import RandomizedSearchCV
-from sqlalchemy import FLOAT
 
-from forest_ml.pipeline import create_pipeline
+from .pipeline import create_pipeline
 
 
-def search_params(X, y, classifier):
+def search_best_model(X, y, classifier):
     space = dict()
-    #space['use_scaler'] = ['True', 'False']
     if classifier == 'K-Neighbors':
         space['classifier__n_neighbors'] = [2, 3, 5]
     else:
@@ -14,4 +12,4 @@ def search_params(X, y, classifier):
     estim = create_pipeline(classifier=classifier)
     searcher = RandomizedSearchCV(estim, space, scoring='accuracy')
     searcher.fit(X, y)
-    return searcher.best_params_, searcher.best_score_
+    return searcher.best_estimator_
