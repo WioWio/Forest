@@ -3,7 +3,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-from forest_ml.feature_engin import select_features
+from .feature_engin import select_features
 
 
 def create_pipeline(

@@ -15,25 +15,28 @@ from sklearn.metrics import (
 )
 from sklearn.model_selection import KFold
 
-from forest_ml.params_searcher import search_params
-
+from .params_searcher import search_best_model
 from .pipeline import create_pipeline
 from .data import get_dataset
 
 
-def get_metrics(model, X, y, n_splits: int) -> list:
+def get_metrics(pipeline, classifier, X, y, n_splits: int) -> list:
     X = X.to_numpy()
     accuracy, mse, loss, v_score = [], [], [], []
     splits = KFold(n_splits=n_splits)
     for train_i, test_i in splits.split(X):
-        fitted_model = model.fit(X[train_i], y[train_i])
-        y_pred = fitted_model.predict(X[test_i])
-        y_prob = fitted_model.predict_proba(X[test_i])
-        y_true = y[test_i]
-        accuracy.append(accuracy_score(y_true, y_pred))
-        mse.append(mean_squared_error(y_true, y_pred))
-        loss.append(log_loss(y_true, y_prob))
-        v_score.append(v_measure_score(y[test_i], y_pred))
+        X_train,y_train = X[train_i], y[train_i]
+        X_test,y_test = X[test_i],  y[test_i]
+        if pipeline is None:
+            fitted_model = search_best_model(X_train, y_train, classifier)
+        else:
+            fitted_model = pipeline.fit(X_train, y_train)
+        y_pred = fitted_model.predict(X_test)
+        y_prob = fitted_model.predict_proba(X_test)
+        accuracy.append(accuracy_score(y_test, y_pred))
+        mse.append(mean_squared_error(y_test, y_pred))
+        loss.append(log_loss(y_test, y_prob))
+        v_score.append(v_measure_score(y_test, y_pred))
     accuracy, mse, loss, v_score = np.mean(accuracy), np.mean(mse), np.mean(loss), np.mean(v_score)
     metrics = [
         ("Accuracy", accuracy),
@@ -106,7 +109,7 @@ def get_metrics(model, X, y, n_splits: int) -> list:
     show_default=True,
 )
 @click.option(
-    "--use-search-cv",
+    "--use-nested-cv",
     default=True,
     type=bool,
     show_default=True,
@@ -115,7 +118,6 @@ def train(
     dataset_path: Path,
     save_model_path: Path,
     random_state: int,
-    # test_split_ratio: float,
     use_scaler: bool,
     max_iter: int,
     logreg_c: float,
@@ -123,34 +125,37 @@ def train(
     classifier: str,
     selector: str,
     pca_components: int,
-    use_search_cv: bool
+    use_nested_cv: bool
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
-        mlflow.log_param('model', classifier)
-        if use_search_cv:
-            params, best_score = search_params(features, target, classifier)
-            for param, value in params.items():
-                mlflow.log_param(param, value)
-            mlflow.log_metric('accuracy', best_score)    
+        if use_nested_cv:
+            metrics = get_metrics(None, classifier, features, target, n_splits=5)
+            model = search_best_model(features, target, classifier)
         else:
-            pipeline = create_pipeline(
+            model = create_pipeline(
                 classifier, selector, pca_components, 
                 use_scaler, logreg_c, max_iter, n_neighbors
             )
-            metrics = get_metrics(pipeline, features, target, n_splits=5)
-            if selector:
-                mlflow.log_param("selector", selector)
-                if selector == "PCA":
-                    mlflow.log_param("n_components", pca_components)
-            mlflow.log_param("use_scaler", use_scaler)
+            metrics = get_metrics(model, classifier, features, target, n_splits=5)
+        mlflow.log_param('model', classifier)
+        mlflow.log_param("use_scaler", use_scaler)
+        mlflow.log_param("use_nested_cv", use_nested_cv)
+        if selector:
+             mlflow.log_param("selector", selector)
+             if selector == "PCA":
+                mlflow.log_param("n_components", pca_components)       
+        if not use_nested_cv:
             mlflow.log_param("max_iter", max_iter)
             if classifier == "LogReg":
                 mlflow.log_param("logreg_c", logreg_c)
             if classifier == "K-Neighbors":
                 mlflow.log_param("n_neighbors", n_neighbors)
-            for metric in metrics:
-                mlflow.log_metric(metric[0], metric[1])
-                click.echo(f"{metric[0]}: {metric[1]}")
-            dump(pipeline, save_model_path)
-            click.echo(f"Model is saved to {save_model_path}.")
+        for metric in metrics:
+            mlflow.log_metric(metric[0], metric[1])
+            click.echo(f"{metric[0]}: {metric[1]}")
+        dump(model, save_model_path)
+        click.echo(f"Model is saved to {save_model_path}.")
+
+
+train()
