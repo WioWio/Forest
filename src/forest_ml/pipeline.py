@@ -14,16 +14,22 @@ def create_pipeline(
     logreg_C: float = None,
     max_iter: int = None,
     n_neighbors: int = None,
-    random_state: int = None
+    random_state: int = None,
 ) -> Pipeline:
     steps = []
     if selector is not None:
-        steps.append(("selector", select_features(selector,pca_components)))
+        steps.append(("selector", select_features(selector, pca_components)))
     if use_scaler:
         steps.append(("scaler", StandardScaler()))
     if classifier == "K-Neighbors":
         steps.append(("classifier", KNeighborsClassifier(n_neighbors=n_neighbors)))
     elif classifier == "LogReg":
-        steps.append(("classifier", LogisticRegression(C=logreg_C, max_iter=max_iter, 
-                                                       random_state=random_state)))
+        steps.append(
+            (
+                "classifier",
+                LogisticRegression(
+                    C=logreg_C, max_iter=max_iter, random_state=random_state
+                ),
+            )
+        )
     return Pipeline(steps=steps)
