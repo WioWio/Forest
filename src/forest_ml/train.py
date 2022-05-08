@@ -20,7 +20,10 @@ from .pipeline import create_pipeline
 from .data import get_dataset
 
 
-def get_metrics(pipeline, classifier, X, y, n_splits: int) -> list:
+def get_metrics(
+        pipeline, classifier, X, y, 
+        n_splits: int, selector = None, 
+        random_state=42) -> list:
     X = X.to_numpy()
     accuracy, mse, loss, v_score = [], [], [], []
     splits = KFold(n_splits=n_splits)
@@ -28,7 +31,7 @@ def get_metrics(pipeline, classifier, X, y, n_splits: int) -> list:
         X_train,y_train = X[train_i], y[train_i]
         X_test,y_test = X[test_i],  y[test_i]
         if pipeline is None:
-            fitted_model = search_best_model(X_train, y_train, classifier)
+            fitted_model = search_best_model(X_train, y_train, classifier, selector, random_state)
         else:
             fitted_model = pipeline.fit(X_train, y_train)
         y_pred = fitted_model.predict(X_test)
@@ -95,12 +98,14 @@ def get_metrics(pipeline, classifier, X, y, n_splits: int) -> list:
 @click.option(
     "--classifier",
     default="K-Neighbors",
-    type=str,
+    type=click.Choice(['K-Neighbors', 'LogReg']),
     show_default=True,
 )
 @click.option(
     "--selector",
-    type=str,
+    default = None,
+    type= click.Choice(['PCA', 'Boruta', 'Trees', 'Lasso'])
+    show_default=True,
 )
 @click.option(
     "--pca-components",
@@ -130,22 +135,22 @@ def train(
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
         if use_nested_cv:
-            metrics = get_metrics(None, classifier, features, target, n_splits=5)
-            model = search_best_model(features, target, classifier)
+            metrics = get_metrics(None, classifier, features, target, 
+                                  5, selector, random_state)
+            model = search_best_model(features, target, classifier, selector, random_state)
         else:
             model = create_pipeline(
                 classifier, selector, pca_components, 
-                use_scaler, logreg_c, max_iter, n_neighbors
+                use_scaler, logreg_c, max_iter, n_neighbors, random_state
             )
             metrics = get_metrics(model, classifier, features, target, n_splits=5)
         mlflow.log_param('model', classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("use_nested_cv", use_nested_cv)
-        if selector:
-             mlflow.log_param("selector", selector)
-             if selector == "PCA":
-                mlflow.log_param("n_components", pca_components)       
+        mlflow.log_param("selector", selector)      
         if not use_nested_cv:
+            if selector == "PCA":
+                mlflow.log_param("n_components", pca_components) 
             mlflow.log_param("max_iter", max_iter)
             if classifier == "LogReg":
                 mlflow.log_param("logreg_c", logreg_c)
