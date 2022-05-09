@@ -3,7 +3,6 @@ from typing import Tuple
 
 import click
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
 
 def get_dataset(csv_path: Path) -> Tuple[pd.DataFrame, pd.Series]:

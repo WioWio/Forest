@@ -2,7 +2,6 @@ from pandas_profiling import ProfileReport
 import pandas as pd
 
 from pathlib import Path
-from joblib import dump
 
 import click
 

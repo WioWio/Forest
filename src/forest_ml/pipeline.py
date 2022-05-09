@@ -22,7 +22,8 @@ def create_pipeline(
     if use_scaler:
         steps.append(("scaler", StandardScaler()))
     if classifier == "K-Neighbors":
-        steps.append(("classifier", KNeighborsClassifier(n_neighbors=n_neighbors)))
+        steps.append(("classifier", 
+                      KNeighborsClassifier(n_neighbors=n_neighbors)))
     elif classifier == "LogReg":
         steps.append(
             (

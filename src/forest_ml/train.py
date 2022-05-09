@@ -141,13 +141,14 @@ def train(
     selector: str,
     pca_components: int,
     use_nested_cv: bool,
-    n_splits: int,
+    n_splits: int
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
         if use_nested_cv:
             metrics = get_metrics(
-                None, classifier, features, target, n_splits, selector, random_state
+                None, classifier, features, target,
+                n_splits, selector, random_state
             )
             model = search_best_model(
                 features, target, classifier, selector, random_state
@@ -163,11 +164,12 @@ def train(
                 n_neighbors,
                 random_state,
             )
-            metrics = get_metrics(model, classifier, features, target, n_splits)
+            metrics = get_metrics(model, classifier,
+                                  features, target, n_splits)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("use_nested_cv", use_nested_cv)
-        mlflow.log_param("selector", selector)
+        mlflow.log_param("selector", selector)s
         if not use_nested_cv:
             if selector == "PCA":
                 mlflow.log_param("n_components", pca_components)
