@@ -1,4 +1,3 @@
-from email.policy import default
 from pathlib import Path
 from joblib import dump
 
@@ -6,7 +5,6 @@ import click
 
 import mlflow
 import numpy as np
-import sklearn
 from sklearn.metrics import (
     accuracy_score,
     log_loss,
@@ -121,9 +119,15 @@ def get_metrics(
 )
 @click.option(
     "--use-nested-cv",
-    default=True,
+    default=False,
     type=bool,
-    show_default=False,
+    show_default=True,
+)
+@click.option(
+    "--n-splits",
+    default=5,
+    type=int,
+    show_default=True,
 )
 def train(
     dataset_path: Path,
@@ -137,12 +141,13 @@ def train(
     selector: str,
     pca_components: int,
     use_nested_cv: bool,
+    n_splits: int,
 ) -> None:
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
         if use_nested_cv:
             metrics = get_metrics(
-                None, classifier, features, target, 5, selector, random_state
+                None, classifier, features, target, n_splits, selector, random_state
             )
             model = search_best_model(
                 features, target, classifier, selector, random_state
@@ -158,7 +163,7 @@ def train(
                 n_neighbors,
                 random_state,
             )
-            metrics = get_metrics(model, classifier, features, target, n_splits=5)
+            metrics = get_metrics(model, classifier, features, target, n_splits)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("use_nested_cv", use_nested_cv)
