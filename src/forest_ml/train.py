@@ -100,7 +100,7 @@ def get_mean_metrics(
 @click.option(
     "--logreg-c",
     default=1.0,
-    type=float,
+    type=click.FloatRange(0.0, 1.0, min_open=True, max_open=True),
     show_default=True,
 )
 @click.option(
@@ -193,6 +193,3 @@ def train(
             click.echo(f"{metric[0]}: {metric[1]}")
         dump(model, save_model_path)
         click.echo(f"Model is saved to {save_model_path}.")
-
-
-train()
