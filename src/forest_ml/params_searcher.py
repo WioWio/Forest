@@ -4,6 +4,16 @@ from .pipeline import create_pipeline
 
 
 def search_best_model(X, y, classifier, selector, random_state):
+    space = create_space(classifier, selector)
+    estim = create_pipeline(classifier, selector, random_state=random_state)
+    searcher = RandomizedSearchCV(
+        estim, space, scoring="accuracy", random_state=random_state
+    )
+    searcher.fit(X, y)
+    return searcher.best_estimator_
+
+
+def create_space(classifier, selector)->dict:
     space = dict()
     if classifier == "K-Neighbors":
         space["classifier__n_neighbors"] = range(1, 40)
@@ -13,9 +23,4 @@ def search_best_model(X, y, classifier, selector, random_state):
         space["classifier__max_iter"] = [100, 500, 1000]
     if selector == "PCA":
         space["selector__n_components"] = range(1, 30)
-    estim = create_pipeline(classifier, selector, random_state=random_state)
-    searcher = RandomizedSearchCV(
-        estim, space, scoring="accuracy", random_state=random_state
-    )
-    searcher.fit(X, y)
-    return searcher.best_estimator_
+    return space

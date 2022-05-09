@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Tuple
 from joblib import dump
 
 import click
@@ -18,7 +19,7 @@ from .pipeline import create_pipeline
 from .data import get_dataset
 
 
-def get_metrics(
+def get_cv_metrics(
     pipeline, classifier, X, y, n_splits: int, selector=None, random_state=42
 ) -> list:
     X = X.to_numpy()
@@ -39,6 +40,16 @@ def get_metrics(
         mse.append(mean_squared_error(y_test, y_pred))
         loss.append(log_loss(y_test, y_prob))
         v_score.append(v_measure_score(y_test, y_pred))
+    metrics = get_mean_metrics(accuracy, mse, loss, v_score)
+    return metrics
+
+
+def get_mean_metrics(
+        accuracy: list, 
+        mse:list, 
+        loss: list, 
+        v_score: list
+    ) -> list[Tuple, Tuple, Tuple, Tuple]:
     accuracy, mse, loss, v_score = (
         np.mean(accuracy),
         np.mean(mse),
@@ -52,7 +63,6 @@ def get_metrics(
         ("V-Score", v_score),
     ]
     return metrics
-
 
 @click.command()
 @click.option(
@@ -146,7 +156,7 @@ def train(
     features, target = get_dataset(dataset_path)
     with mlflow.start_run():
         if use_nested_cv:
-            metrics = get_metrics(
+            metrics = get_cv_metrics(
                 None, classifier, features, target,
                 n_splits, selector, random_state
             )
@@ -164,12 +174,12 @@ def train(
                 n_neighbors,
                 random_state,
             )
-            metrics = get_metrics(model, classifier,
+            metrics = get_cv_metrics(model, classifier,
                                   features, target, n_splits)
         mlflow.log_param("model", classifier)
         mlflow.log_param("use_scaler", use_scaler)
         mlflow.log_param("use_nested_cv", use_nested_cv)
-        mlflow.log_param("selector", selector)s
+        mlflow.log_param("selector", selector)
         if not use_nested_cv:
             if selector == "PCA":
                 mlflow.log_param("n_components", pca_components)
