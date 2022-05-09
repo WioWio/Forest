@@ -2,10 +2,6 @@
 
 This package allows to predict cover type of a forest. Data was taken from [Forest Dataset](https://www.kaggle.com/competitions/forest-cover-type-prediction).
 
-mlflow experiments:
-![изображение](https://user-images.githubusercontent.com/44612254/167252439-52d8d943-0951-46c8-bf32-1c7908e55515.png)
-(As main metric was Accuracy selected, beacause distribution of target class CoverType is normal and not skewed)
-
 ## Usage
 ### Train model
 1. Clone this repository to your machine.
@@ -38,3 +34,13 @@ Eda package lets generate you an eda report in html format.
 poetry run eda -d <path to csv with data> -s <path to save report>
 ```
 Default for loading and saving is *data/forest_data.csv* and *data/eda_report.html* 
+
+## Screenshots
+### Mlflow
+mlflow experiments:
+![изображение](https://user-images.githubusercontent.com/44612254/167252439-52d8d943-0951-46c8-bf32-1c7908e55515.png)
+(As main metric was Accuracy selected, beacause distribution of target class CoverType is normal and not skewed)
+
+### Black & Flake8
+![изображение](https://user-images.githubusercontent.com/44612254/167374487-c499b540-1f00-442f-ad55-7bef545d91b9.png)
+![изображение](https://user-images.githubusercontent.com/44612254/167375179-1d3a0bc6-932c-440e-8995-b1bc491813ed.png)
