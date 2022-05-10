@@ -44,3 +44,8 @@ mlflow experiments:
 ### Black & Flake8
 ![изображение](https://user-images.githubusercontent.com/44612254/167374487-c499b540-1f00-442f-ad55-7bef545d91b9.png)
 ![изображение](https://user-images.githubusercontent.com/44612254/167375179-1d3a0bc6-932c-440e-8995-b1bc491813ed.png)
+
+### Pytest
+In test_train were logreg-c and classifier inputs tested, with right and not correct inputs, since logreg-c can be only btw 0 and 1, and classifier KNeighbors or LogReg:
+![изображение](https://user-images.githubusercontent.com/44612254/167630550-d90b686e-5b72-4404-a6e1-3090ff6247d8.png)
+
