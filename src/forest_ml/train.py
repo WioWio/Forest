@@ -100,7 +100,7 @@ def get_mean_metrics(
 @click.option(
     "--logreg-c",
     default=1.0,
-    type=click.FloatRange(0.0, 1.0, min_open=True, max_open=True),
+    type=click.FloatRange(0, 1.0),
     show_default=True,
 )
 @click.option(
