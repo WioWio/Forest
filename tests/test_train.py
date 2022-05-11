@@ -81,3 +81,4 @@ def test_model(runner: CliRunner, data: pd.DataFrame, load_path: Path, save_path
         assert hasattr(model, "predict")
         assert hasattr(model, "predict_proba")
         assert model.predict(X).all() in range(1, 7)
+        assert model.predict_proba(X).all() in range(0, 1)
