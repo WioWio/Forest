@@ -1,10 +1,13 @@
 import os
 from pathlib import Path
+import joblib
 import pandas as pd
 import pytest
+from joblib import dump
 
 from click.testing import CliRunner
 
+from forest_ml.data import get_dataset
 from forest_ml.train import train
 
 @pytest.fixture
@@ -69,10 +72,7 @@ def test_classifier(
         assert "Model is saved" in result.output
 
 
-
-
-
-def test_create_model(
+def test_model(
         runner: CliRunner,
         data: pd.DataFrame,
         load_path: Path,
@@ -80,8 +80,14 @@ def test_create_model(
         ):
     with runner.isolated_filesystem():
         data.to_csv(load_path)
+        X, _ = get_dataset(load_path)
         assert not os.path.exists(save_path)
         runner.invoke(train,
                       ['-s', save_path,
                        '-d', load_path])
         assert os.path.exists(save_path)
+
+        model = joblib.load(save_path)
+        assert hasattr(model,'predict')
+        assert hasattr(model, 'predict_proba')
+        assert model.predict(X).all() in range(1,7)
