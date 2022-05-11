@@ -7,7 +7,7 @@ from forest_ml.data import get_dataset
 
 @pytest.fixture
 def path() -> Path:
-    return "tests\datasamples.csv"
+    return Path("tests\datasamples.csv")
 
 
 def test_get_dataset(path: Path) -> None:

@@ -8,16 +8,16 @@ from .feature_engin import select_features
 
 def create_pipeline(
     classifier: str,
-    selector: str = None,
-    pca_components: int = None,
+    selector: str = '',
+    pca_components: int = 0,
     use_scaler: bool = True,
-    logreg_C: float = None,
-    max_iter: int = None,
-    n_neighbors: int = None,
-    random_state: int = None,
+    logreg_C: float = 1,
+    max_iter: int = 0,
+    n_neighbors: int = 0,
+    random_state: int = 42,
 ) -> Pipeline:
     steps = []
-    if selector is not None:
+    if selector != '':
         steps.append(("selector", select_features(selector, pca_components)))
     if use_scaler:
         steps.append(("scaler", StandardScaler()))

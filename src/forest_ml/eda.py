@@ -21,7 +21,10 @@ import click
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
-def generate_eda(dataset_path: Path, save_path: Path):
+def generate_eda(
+        dataset_path: Path,
+        save_path: Path
+) -> None:
     dataset = pd.read_csv(dataset_path)
     report = ProfileReport(dataset, title="Forest Pandas Profiling Report")
     report.to_file(save_path)

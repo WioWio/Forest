@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import Tuple
+from typing import Any, Tuple
 from joblib import dump
 
 import click
 
 import mlflow
 import numpy as np
+from pandas import array
 from sklearn.metrics import (
     accuracy_score,
     log_loss,
@@ -20,8 +21,14 @@ from .data import get_dataset
 
 
 def get_cv_metrics(
-    pipeline, classifier, X, y, n_splits: int, selector=None, random_state=42
-) -> list:
+    pipeline: Any,
+    classifier: str,
+    X: array,
+    y: array,
+    n_splits: int,
+    selector: str = '',
+    random_state: int = 42
+) -> list[Any]:
     X = X.to_numpy()
     accuracy, mse, loss, v_score = [], [], [], []
     splits = KFold(n_splits=n_splits)
@@ -45,11 +52,11 @@ def get_cv_metrics(
 
 
 def get_mean_metrics(
-        accuracy: list, 
-        mse:list, 
-        loss: list, 
-        v_score: list
-    ) -> list[Tuple, Tuple, Tuple, Tuple]:
+        accuracy: list[float], 
+        mse:list[float], 
+        loss: list[float], 
+        v_score: list[float]
+    ) -> list[Any]:
     accuracy, mse, loss, v_score = (
         np.mean(accuracy),
         np.mean(mse),
@@ -68,14 +75,14 @@ def get_mean_metrics(
 @click.option(
     "-d",
     "--dataset-path",
-    default="data/forest_data.csv",
+    default=Path("data/forest_data.csv"),
     type=click.Path(exists=True, dir_okay=False, path_type=Path),
     show_default=True,
 )
 @click.option(
     "-s",
     "--save-model-path",
-    default="data/model.joblib",
+    default=Path("data/model.joblib"),
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
@@ -117,8 +124,8 @@ def get_mean_metrics(
 )
 @click.option(
     "--selector",
-    default=None,
-    type=click.Choice(["PCA", "Boruta", "Trees", "Lasso"]),
+    default='',
+    type=click.Choice(["", "PCA", "Boruta", "Trees", "Lasso"]),
     show_default=True,
 )
 @click.option(
@@ -140,8 +147,8 @@ def get_mean_metrics(
     show_default=True,
 )
 def train(
-    dataset_path: Path,
-    save_model_path: Path,
+    dataset_path: str,
+    save_model_path: str,
     random_state: int,
     use_scaler: bool,
     max_iter: int,

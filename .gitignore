@@ -2,3 +2,4 @@ data
 src/forest_ml/__pycache__
 mlruns
 tests/__pycache__
+.mypy_cache

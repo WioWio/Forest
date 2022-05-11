@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 import joblib
 import pandas as pd
 import pytest
@@ -17,12 +16,12 @@ def runner() -> CliRunner:
 
 
 @pytest.fixture
-def save_path() -> Path:
+def save_path() -> str:
     return "model.joblib"
 
 
 @pytest.fixture
-def load_path() -> Path:
+def load_path() -> str:
     return "datasamples.csv"
 
 
@@ -32,26 +31,26 @@ def data() -> pd.DataFrame:
 
 
 def test_logreg_c(
-    runner: CliRunner, data: pd.DataFrame, load_path: Path, save_path: Path
+    runner: CliRunner, data: pd.DataFrame, load_path: str, save_path: str
 ) -> None:
     """It fails when log_reg_c is not btw. 0 and 1."""
     with runner.isolated_filesystem():
         data.to_csv(load_path)
         result = runner.invoke(
-            train, ["-s", save_path, "-d", load_path, "--logreg-c", 6]
+            train, ["-s", save_path, "-d", load_path, "--logreg-c", '6']
         )
         assert result.exit_code == 2
         assert "Invalid value for '--logreg-c'" in result.output
 
         result = runner.invoke(
-            train, ["-s", save_path, "-d", load_path, "--logreg-c", 0]
+            train, ["-s", save_path, "-d", load_path, "--logreg-c", '0']
         )
         assert result.exit_code == 0
         assert "Model is saved" in result.output
 
 
 def test_classifier(
-    runner: CliRunner, data: pd.DataFrame, load_path: Path, save_path: Path
+    runner: CliRunner, data: pd.DataFrame, load_path: str, save_path: str
 ) -> None:
     with runner.isolated_filesystem():
         data.to_csv(load_path)
@@ -71,8 +70,9 @@ def test_classifier(
 def test_model(
         runner: CliRunner,
         data: pd.DataFrame,
-        load_path: Path,
-        save_path: Path):
+        load_path: str,
+        save_path: str
+) -> None:
     with runner.isolated_filesystem():
         data.to_csv(load_path)
         X, _ = get_dataset(load_path)

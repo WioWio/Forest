@@ -1,3 +1,4 @@
+from typing import Any
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier
@@ -6,7 +7,10 @@ from boruta import BorutaPy
 from sklearn.linear_model import Lasso
 
 
-def select_features(selector: str, pca_components: int):
+def select_features(
+       selector: str, 
+       pca_components: int
+) -> Any:
     if selector == "Boruta":
         return BorutaPy(
             RandomForestClassifier(max_depth=10),
