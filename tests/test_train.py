@@ -3,7 +3,6 @@ from pathlib import Path
 import joblib
 import pandas as pd
 import pytest
-from joblib import dump
 
 from click.testing import CliRunner
 
@@ -69,7 +68,11 @@ def test_classifier(
         assert "Model is saved" in result.output
 
 
-def test_model(runner: CliRunner, data: pd.DataFrame, load_path: Path, save_path: Path):
+def test_model(
+        runner: CliRunner,
+        data: pd.DataFrame,
+        load_path: Path,
+        save_path: Path):
     with runner.isolated_filesystem():
         data.to_csv(load_path)
         X, _ = get_dataset(load_path)
