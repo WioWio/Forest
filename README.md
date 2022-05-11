@@ -49,6 +49,7 @@ mlflow experiments:
 In test_train were:
 * logreg-c and classifier inputs tested, with right and not correct inputs, since logreg-c can be only btw 0 and 1, and classifier KNeighbors or LogReg:
 * correct creating and saving of model tested 
+
 In test_data was:
 * correct features and target extracting tested
 ![изображение](https://user-images.githubusercontent.com/44612254/167865680-a4893b08-d01d-472f-9e5a-e685207af401.png)
