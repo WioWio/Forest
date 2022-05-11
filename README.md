@@ -46,6 +46,9 @@ mlflow experiments:
 ![изображение](https://user-images.githubusercontent.com/44612254/167375179-1d3a0bc6-932c-440e-8995-b1bc491813ed.png)
 
 ### Pytest
-In test_train were logreg-c and classifier inputs tested, with right and not correct inputs, since logreg-c can be only btw 0 and 1, and classifier KNeighbors or LogReg:
-![изображение](https://user-images.githubusercontent.com/44612254/167630550-d90b686e-5b72-4404-a6e1-3090ff6247d8.png)
-
+In test_train were:
+* logreg-c and classifier inputs tested, with right and not correct inputs, since logreg-c can be only btw 0 and 1, and classifier KNeighbors or LogReg:
+* correct creating and saving of model tested 
+In test_data was:
+* correct features and target extracting tested
+![изображение](https://user-images.githubusercontent.com/44612254/167865680-a4893b08-d01d-472f-9e5a-e685207af401.png)
