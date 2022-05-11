@@ -4,9 +4,10 @@ import pandas as pd
 
 from forest_ml.data import get_dataset
 
+
 @pytest.fixture
 def path() -> Path:
-    return 'tests\datasamples.csv'
+    return "tests\datasamples.csv"
 
 
 def test_get_dataset(path: Path) -> None:
@@ -15,5 +16,5 @@ def test_get_dataset(path: Path) -> None:
     assert features.shape[1] == 54
     assert type(target) == pd.Series
     assert features.shape[0] == target.shape[0]
-    assert target.values.all() in range(1,7)
-    assert target.name == 'Cover_Type'
+    assert target.values.all() in range(1, 7)
+    assert target.name == "Cover_Type"
