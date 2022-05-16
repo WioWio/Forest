@@ -1,3 +1,6 @@
+![изображение](https://user-images.githubusercontent.com/44612254/168597181-00631a37-5511-453e-9d9b-6180a1ee1bd5.png)
+
+
 # Forest
 
 This package allows to predict cover type of a forest. Data was taken from [Forest Dataset](https://www.kaggle.com/competitions/forest-cover-type-prediction).
