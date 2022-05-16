@@ -1,4 +1,4 @@
-![изображение](https://user-images.githubusercontent.com/44612254/168616247-95724b49-0108-4e33-8cb0-ff3373afbfad.png)
+![изображение](https://user-images.githubusercontent.com/44612254/168631672-ec978a50-9f4d-4aca-9f0e-c898d05c6c01.png)
 
 
 # Forest
