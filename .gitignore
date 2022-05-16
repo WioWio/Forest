@@ -3,3 +3,5 @@ src/forest_ml/__pycache__
 mlruns
 tests/__pycache__
 .mypy_cache
+src/forest_ml/model/__pycache__
+src/forest_ml/model/model.joblib
