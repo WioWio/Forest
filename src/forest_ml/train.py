@@ -6,7 +6,7 @@ import click
 
 import mlflow
 import numpy as np
-from pandas import array
+import pandas as pd
 from sklearn.metrics import (
     accuracy_score,
     log_loss,
@@ -18,13 +18,14 @@ from sklearn.model_selection import KFold
 from .params_searcher import search_best_model
 from .pipeline import create_pipeline
 from .data import get_dataset
+from .feature_engin import custom_select
 
 
 def get_cv_metrics(
     pipeline: Any,
     classifier: str,
-    X: array,
-    y: array,
+    X: pd.DataFrame,
+    y: pd.Series,
     n_splits: int,
     selector: str = '',
     random_state: int = 42
@@ -36,7 +37,7 @@ def get_cv_metrics(
         X_train, y_train = X[train_i], y[train_i]
         X_test, y_test = X[test_i], y[test_i]
         if pipeline is None:
-            fitted_model = search_best_model(
+            fitted_model, _ = search_best_model(
                 X_train, y_train, classifier, selector, random_state
             )
         else:
@@ -82,7 +83,7 @@ def get_mean_metrics(
 @click.option(
     "-s",
     "--save-model-path",
-    default=Path("data/model.joblib"),
+    default=Path("src/forest_ml/model/model.joblib"),
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
     show_default=True,
 )
@@ -118,14 +119,14 @@ def get_mean_metrics(
 )
 @click.option(
     "--classifier",
-    default="K-Neighbors",
-    type=click.Choice(["K-Neighbors", "LogReg"]),
+    default="Trees",
+    type=click.Choice(["K-Neighbors", "LogReg", "Forest", "Trees"]),
     show_default=True,
 )
 @click.option(
     "--selector",
-    default='',
-    type=click.Choice(["", "PCA", "Boruta", "Trees", "Lasso"]),
+    default='Custom',
+    type=click.Choice(["", "PCA", "Boruta", "Trees", "Lasso", "Custom"]),
     show_default=True,
 )
 @click.option(
@@ -135,8 +136,14 @@ def get_mean_metrics(
     show_default=True,
 )
 @click.option(
+    "--alpha",
+    default=1,
+    type=float,
+    show_default=True,
+)
+@click.option(
     "--use-nested-cv",
-    default=False,
+    default=True,
     type=bool,
     show_default=True,
 )
@@ -157,24 +164,31 @@ def train(
     classifier: str,
     selector: str,
     pca_components: int,
+    alpha: float,
     use_nested_cv: bool,
     n_splits: int
 ) -> None:
     features, target = get_dataset(dataset_path)
-    with mlflow.start_run():
+    if selector == "Custom":
+        selector = ''
+        features = custom_select(features)
+    with mlflow.start_run(run_name=classifier):
         if use_nested_cv:
             metrics = get_cv_metrics(
                 None, classifier, features, target,
                 n_splits, selector, random_state
             )
-            model = search_best_model(
+            model, params = search_best_model(
                 features, target, classifier, selector, random_state
             )
+            click.echo(get_cv_metrics(model, classifier,features, target, n_splits))
+            click.echo(f"Best parms: {params}")
         else:
             model = create_pipeline(
                 classifier,
                 selector,
                 pca_components,
+                alpha,
                 use_scaler,
                 logreg_c,
                 max_iter,
