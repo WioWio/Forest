@@ -53,3 +53,7 @@ In test_train were:
 In test_data was:
 * correct features and target extracting tested
 ![изображение](https://user-images.githubusercontent.com/44612254/167865680-a4893b08-d01d-472f-9e5a-e685207af401.png)
+
+### MyPy
+All files were cheked, only 1 error with dictionary types wasn't fixed.
+![изображение](https://user-images.githubusercontent.com/44612254/167894932-2284e664-418b-43da-a683-d1154033e70b.png)
